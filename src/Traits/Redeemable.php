@@ -38,10 +38,9 @@ trait Redeemable
      */
     public function applyCode($code, $callback = null)
     {
-        $userTable = $this->getUserModelClassName();
         try {
             if ($promocode = (new Promocodes)->check($code)) {
-                if ($promocode->users()->wherePivot((new $userTable)->getModel()->getForeignKey(), $this->id)->exists()) {
+                if ($promocode->users()->wherePivot($this->getForeignKey(), $this->id)->exists()) {
                     throw new AlreadyUsedException();
                 }
 
@@ -79,10 +78,5 @@ trait Redeemable
     public function redeemCode($code, $callback = null)
     {
         return $this->applyCode($code, $callback);
-    }
-
-    private function getUserModelClassName(): string
-    {
-        return config('promocodes.user_model');
     }
 }
