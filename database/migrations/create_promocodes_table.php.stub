@@ -33,4 +33,10 @@ class CreatePromocodesTable extends Migration
             $table->foreign('promocode_id')->references('id')->on('promocodes');
         });
     }
+
+    public function down()
+    {
+        Schema::dropIfExists('promocode_user');
+        Schema::dropIfExists('promocodes');
+    }
 }
