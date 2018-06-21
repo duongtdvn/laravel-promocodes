@@ -23,5 +23,15 @@
         "psr-4": {
             "DuongTD\\Promocodes\\": "src"
         }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "DuongTD\\Promocodes\\PromocodesServiceProvider"
+            ],
+            "aliases": {
+                "Promocodes": "DuongTD\\Promocodes\\Facades\\Promocodes"
+            }
+        }
     }
 }
