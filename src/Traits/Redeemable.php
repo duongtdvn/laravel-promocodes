@@ -14,7 +14,7 @@ use DuongTD\Promocodes\Exceptions\InvalidPromocodeException;
 use DuongTD\Promocodes\Models\Promocode;
 use DuongTD\Promocodes\Promocodes;
 
-class Redeemable
+trait Redeemable
 {
     /**
      * Get the promocodes that are related to user.
