@@ -11,7 +11,6 @@ namespace DuongTD\Promocodes;
 use Carbon\Carbon;
 use DuongTD\Promocodes\Exceptions\AlreadyUsedException;
 use DuongTD\Promocodes\Exceptions\InvalidPromocodeException;
-use DuongTD\Promocodes\Exceptions\UnauthenticatedException;
 use DuongTD\Promocodes\Models\Promocode;
 
 class Promocodes
@@ -116,19 +115,26 @@ class Promocodes
      * @param string $code
      *
      * @return bool|\DuongTD\Promocodes\Models\Promocode
-     * @throws \DuongTD\Promocodes\Exceptions\InvalidPromocodeException
+     * @throws InvalidPromocodeException
+     * @throws AlreadyUsedException
      */
     public function check($code)
     {
         // TODO: improve verification process
         $promocode = Promocode::byCode($code)->first();
 
-        if ($promocode === null) {
-            throw new InvalidPromocodeException;
+        if (!$promocode) {
+            throw new InvalidPromocodeException();
         }
-        if ($promocode->isExpired() || ($promocode->isDisposable() && $promocode->users()->exists())) {
-            return false;
+
+        if ($promocode->isExpired()) {
+            throw new InvalidPromocodeException('Given code has been expired!');
         }
+
+        if ($promocode->isDisposable() and $promocode->users()->exists()) {
+            throw new AlreadyUsedException();
+        }
+
         return $promocode;
     }
 
@@ -138,30 +144,21 @@ class Promocodes
      * @param string $code
      *
      * @throws InvalidPromocodeException if the promocode is invalid
-     * @throws UnauthenticatedException if use is not authenticated
      * @throws AlreadyUsedException if the promocode has been used by current user
      *
      * @return bool|\DUongTD\Promocodes\Models\Promocode
      */
+
     public function apply($code)
     {
-        if (!auth()->check()) {
-            throw new UnauthenticatedException;
+        if ($promocode = $this->check($code)) {
+            $promocode->users()->attach(auth()->id(), [
+                'used_at' => Carbon::now()
+            ]);
+
+            return $promocode->load('users');
         }
 
-        try {
-            if ($promocode = $this->check($code)) {
-                if ($this->isSecondUsageAttempt($promocode)) {
-                    throw new AlreadyUsedException;
-                }
-                $promocode->users()->attach(auth()->user()->id, [
-                    'used_at' => Carbon::now(),
-                ]);
-                return $promocode->load('users');
-            }
-        } catch(InvalidPromocodeException $exception) {
-            //
-        }
         return false;
     }
 
@@ -171,7 +168,6 @@ class Promocodes
      * @param string $code
      *
      * @throws InvalidPromocodeException if the promocode is invalid
-     * @throws UnauthenticatedException if use is not authenticated
      * @throws AlreadyUsedException if the promocode has been used by current user
      *
      * @return bool|\DUongTD\Promocodes\Models\Promocode
@@ -191,10 +187,13 @@ class Promocodes
     public function disable($code)
     {
         $promocode = Promocode::byCode($code)->first();
-        if ($promocode === null) {
+
+        if (!$promocode) {
             throw new InvalidPromocodeException();
         }
+
         $promocode->expired_at = Carbon::now();
+
         return $promocode->save();
     }
 
