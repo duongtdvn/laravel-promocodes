@@ -8,8 +8,8 @@
 
 namespace DuongTD\Promocodes\Traits;
 
-use Carbon\Carbon;
 use DuongTD\Promocodes\Exceptions\AlreadyUsedException;
+use DuongTD\Promocodes\Exceptions\ExpiredPromocodeException;
 use DuongTD\Promocodes\Exceptions\InvalidPromocodeException;
 use DuongTD\Promocodes\Models\Promocode;
 use DuongTD\Promocodes\Promocodes;
@@ -27,53 +27,33 @@ trait Redeemable
     }
 
     /**
-     * Apply promocode to user and get callback.
-     *
      * @param string $code
-     * @param null|\Closure $callback
-     *
-     * @return null|\DuongTD\Promocodes\Models\Promocode
+     * @param callable|null $callback
+     * @return bool|Promocode
      * @throws AlreadyUsedException
      * @throws InvalidPromocodeException
+     * @throws ExpiredPromocodeException
      */
-    public function applyCode($code, $callback = null)
+    public function applyCode(string $code, callable $callback = null)
     {
-        try {
-            if ($promocode = (new Promocodes)->check($code)) {
-                if ($promocode->users()->wherePivot($this->getForeignKey(), $this->id)->exists()) {
-                    throw new AlreadyUsedException();
-                }
+        $promocode = (new Promocodes())->apply($code);
 
-                $promocode->users()->attach($this->id, [
-                    'used_at' => Carbon::now(),
-                ]);
-
-                $promocode->load('users');
-
-                if (is_callable($callback)) {
-                    $callback($promocode);
-                }
-
-                return $promocode;
-            }
-        } catch (InvalidPromocodeException $exception) {
-            //
+        if (is_null($callback)) {
+            return $promocode;
         }
-        if (is_callable($callback)) {
-            $callback(null);
-        }
-        return null;
+
+        call_user_func($callback, $promocode);
+
+        return $callback($promocode);
     }
 
     /**
-     * Redeem promocode to user and get callback.
-     *
-     * @param string $code
-     * @param null|\Closure $callback
-     *
-     * @return null|\DuongTD\Promocodes\Models\Promocode
+     * @param $code
+     * @param null $callback
+     * @return bool|Promocode
      * @throws AlreadyUsedException
      * @throws InvalidPromocodeException
+     * @throws ExpiredPromocodeException
      */
     public function redeemCode($code, $callback = null)
     {
