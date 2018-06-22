@@ -10,6 +10,7 @@ namespace DuongTD\Promocodes;
 
 use Carbon\Carbon;
 use DuongTD\Promocodes\Exceptions\AlreadyUsedException;
+use DuongTD\Promocodes\Exceptions\ExpiredPromocodeException;
 use DuongTD\Promocodes\Exceptions\InvalidPromocodeException;
 use DuongTD\Promocodes\Models\Promocode;
 
@@ -116,11 +117,11 @@ class Promocodes
      *
      * @return bool|\DuongTD\Promocodes\Models\Promocode
      * @throws InvalidPromocodeException
+     * @throws ExpiredPromocodeException
      * @throws AlreadyUsedException
      */
     public function check($code)
     {
-        // TODO: improve verification process
         $promocode = Promocode::byCode($code)->first();
 
         if (!$promocode) {
@@ -128,7 +129,7 @@ class Promocodes
         }
 
         if ($promocode->isExpired()) {
-            throw new InvalidPromocodeException('Given code has been expired!');
+            throw new ExpiredPromocodeException();
         }
 
         if ($promocode->isDisposable() and $promocode->users()->exists()) {
@@ -144,6 +145,7 @@ class Promocodes
      * @param string $code
      *
      * @throws InvalidPromocodeException if the promocode is invalid
+     * @throws ExpiredPromocodeException
      * @throws AlreadyUsedException if the promocode has been used by current user
      *
      * @return bool|\DUongTD\Promocodes\Models\Promocode
@@ -168,6 +170,7 @@ class Promocodes
      * @param string $code
      *
      * @throws InvalidPromocodeException if the promocode is invalid
+     * @throws ExpiredPromocodeException
      * @throws AlreadyUsedException if the promocode has been used by current user
      *
      * @return bool|\DUongTD\Promocodes\Models\Promocode
