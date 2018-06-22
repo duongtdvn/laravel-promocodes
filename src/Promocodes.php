@@ -279,15 +279,4 @@ class Promocodes
     {
         return !in_array($new, array_merge($collection, $this->codes));
     }
-
-    /**
-     * Check if user is trying to apply code again.
-     *
-     * @param $promocode
-     *
-     * @return bool
-     */
-    private function isSecondUsageAttempt($promocode) {
-        return $promocode->users()->wherePivot('user_id', auth()->id())->exists();
-    }
 }

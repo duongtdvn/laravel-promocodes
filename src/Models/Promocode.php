@@ -26,8 +26,10 @@ class Promocode extends Model
      * @var array
      */
     protected $casts = [
-        'is_disposable' => 'boolean',
+        'code' => 'string',
+        'reward' => 'float',
         'data' => 'json',
+        'is_disposable' => 'boolean'
     ];
 
     /**
@@ -120,6 +122,8 @@ class Promocode extends Model
      */
     public function isExpired()
     {
-        return $this->expired_at ? Carbon::now()->gte($this->expired_at) : false;
+        return ! is_null($this->expired_at)
+            && $this->expired_at->format('Y') > 0
+            && $this->expired_at->lt(Carbon::now());
     }
 }
