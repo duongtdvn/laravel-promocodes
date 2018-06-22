@@ -42,9 +42,9 @@ trait Redeemable
             return $promocode;
         }
 
-        call_user_func($callback, $promocode);
+        $callback($promocode);
 
-        return $callback($promocode);
+        return $promocode;
     }
 
     /**
