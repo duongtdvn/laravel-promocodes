@@ -26,8 +26,10 @@ class Promocode extends Model
      * @var array
      */
     protected $casts = [
-        'is_disposable' => 'boolean',
+        'code' => 'string',
+        'reward' => 'float',
         'data' => 'json',
+        'is_disposable' => 'boolean'
     ];
 
     /**
