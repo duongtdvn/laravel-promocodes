@@ -29,7 +29,7 @@ class CreatePromocodesTable extends Migration
                 $table->unsignedInteger((new $userModel)->getModel()->getForeignKey());
                 $table->unsignedInteger('promocode_id');
                 $table->timestamp('used_at');
-                $table->foreign('customer_id')->references('id')->on((new $userModel)->getModel()->getTable());
+                $table->foreign((new $userModel)->getModel()->getForeignKey())->references('id')->on((new $userModel)->getModel()->getTable());
                 $table->foreign('promocode_id')->references('id')->on('promocodes');
             });
         }
